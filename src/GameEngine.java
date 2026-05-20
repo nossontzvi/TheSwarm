@@ -1,4 +1,6 @@
 import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
 import java.awt.Color;
@@ -9,13 +11,12 @@ public class GameEngine {
     private Player player;
     private SoundManager soundManager;
     private int hitCooldown = 0;
+    public List<Enemy> enemies = new ArrayList<>();
+    public List<Particle> particles = new ArrayList<>();
 
     public int getHitCooldown() {
         return hitCooldown;
     }
-
-    public List<Enemy> enemies = new CopyOnWriteArrayList<>();
-    public List<Particle> particles = new CopyOnWriteArrayList<>();
 
     public int score = 0;
     public int level = 1;
@@ -31,12 +32,14 @@ public class GameEngine {
         this.keyHandler = keyHandler;
         this.player = player;
         this.soundManager = new SoundManager();
+
+        this.soundManager.loadSound("bgm", "/bgm.wav", 1);
+        this.soundManager.loadSound("slash", "/slash.wav", 5);
     }
 
     public void startGameThread() {
-        soundManager.setFile("/bgm.wav");
-        soundManager.loop();
 
+        soundManager.loop("bgm");
         new Thread(() -> {
             while (true) {
                 if (!keyHandler.escPressed && !isGameOver) {
@@ -75,10 +78,12 @@ public class GameEngine {
             int randomX = (int)(Math.random() * 1920);
             int enemyType = (int)(Math.random() * 10);
 
-            if (enemyType == 9) {
-                enemies.add(new FastEnemy(randomX, -50, player));
-            } else {
-                enemies.add(new Enemy(randomX, -50, 2, player));
+            synchronized (enemies) {
+                if (enemyType == 9) {
+                    enemies.add(new FastEnemy(randomX, -50, player));
+                } else {
+                    enemies.add(new Enemy(randomX, -50, 2, player));
+                }
             }
             spawnTimer = 0;
         }
@@ -96,9 +101,7 @@ public class GameEngine {
             attackCooldown = 30;
             attackActiveTime = 10;
 
-            soundManager.setFile("/slash.wav");
-            soundManager.play();
-
+            soundManager.play("slash");
             int atkX = player.x;
             int atkY = player.y;
             int offset = 150;
@@ -121,15 +124,29 @@ public class GameEngine {
     }
 
     private void updateLists() {
-        for (Enemy enemy : enemies) {
-            enemy.update();
-            if (!enemy.isActive) enemies.remove(enemy);
+        synchronized (enemies) {
+            Iterator<Enemy> enemyIterator = enemies.iterator();
+            while (enemyIterator.hasNext()) {
+                Enemy enemy = enemyIterator.next();
+                enemy.update();
+                if (!enemy.isActive) {
+                    enemyIterator.remove();
+                }
+            }
         }
-        for (Particle p : particles) {
-            p.update();
-            if (p.life <= 0) particles.remove(p);
+
+        synchronized (particles) {
+            Iterator<Particle> particleIterator = particles.iterator();
+            while (particleIterator.hasNext()) {
+                Particle p = particleIterator.next();
+                p.update();
+                if (p.life <= 0) {
+                    particleIterator.remove();
+                }
+            }
         }
     }
+
 
     private void checkPlayerCollision() {
         if (hitCooldown > 0) return;
@@ -149,8 +166,8 @@ public class GameEngine {
     }
 
     private void restartGame() {
-        enemies.clear();
-        particles.clear();
+        synchronized (enemies) { enemies.clear(); }
+        synchronized (particles) { particles.clear(); }
         score = 0;
         level = 1;
         player.x = 960;
@@ -160,8 +177,10 @@ public class GameEngine {
     }
 
     private void spawnParticles(int x, int y) {
-        for (int i = 0; i < 15; i++) {
-            particles.add(new Particle(x, y, Color.GREEN));
+        synchronized (particles) {
+            for (int i = 0; i < 15; i++) {
+                particles.add(new Particle(x, y, Color.GREEN));
+            }
         }
     }
 }

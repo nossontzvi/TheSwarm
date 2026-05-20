@@ -3,13 +3,18 @@ import javax.imageio.ImageIO;
 public class Player extends Entity {
     private KeyHandler keyHandler;
     public int facingDirection = 1;
-    public int maxHealth = 5;
-    public int currentHealth = 5;
+    public int maxHealth = 3;
+    public int currentHealth = 3;
 
     public Player(int x, int y, int speed, KeyHandler keyHandler) {
         super(x, y, 288, 288, speed);
         this.keyHandler = keyHandler;
         getPlayerImage();
+
+        this.hitOffsetX = 100;
+        this.hitOffsetY = 80;
+        this.hitWidth = 88;
+        this.hitHeight = 148;
     }
 
     private void getPlayerImage() {

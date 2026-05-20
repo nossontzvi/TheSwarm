@@ -7,12 +7,21 @@ public abstract class Entity {
     protected BufferedImage sprite;
     public boolean isActive = true;
 
+    protected int hitOffsetX = 0;
+    protected int hitOffsetY = 0;
+    protected int hitWidth;
+    protected int hitHeight;
+
+    private Rectangle bounds = new Rectangle(0, 0, 0, 0);
+
     public Entity(int x, int y, int width, int height, int speed) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.speed = speed;
+        this.hitWidth = width;
+        this.hitHeight = height;
     }
 
     public abstract void update();
@@ -24,6 +33,7 @@ public abstract class Entity {
     }
 
     public Rectangle getBounds() {
-        return new Rectangle(x, y, width, height);
+        bounds.setBounds(x + hitOffsetX, y + hitOffsetY, hitWidth, hitHeight);
+        return bounds;
     }
 }

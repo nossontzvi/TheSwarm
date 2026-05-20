@@ -8,6 +8,13 @@ public class Particle {
     public int life;
     public Color color;
 
+    private static final AlphaComposite[] alphas = new AlphaComposite[21];
+    static {
+        for (int i = 0; i <= 20; i++) {
+            alphas[i] = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, Math.max(0, i / 20.0f));
+        }
+    }
+
     public Particle(int x, int y, Color color) {
         this.x = x;
         this.y = y;
@@ -24,11 +31,11 @@ public class Particle {
     }
 
     public void draw(Graphics2D g2) {
-        float alpha = Math.max(0, (float) life / 20.0f);
-        AlphaComposite alcom = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
-        g2.setComposite(alcom);
+        if (life < 0) return;
+
+        g2.setComposite(alphas[life]);
         g2.setColor(color);
         g2.fillRect((int)x, (int)y, 6, 6);
-        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+        g2.setComposite(alphas[20]);
     }
 }

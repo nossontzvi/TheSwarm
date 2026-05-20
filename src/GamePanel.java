@@ -8,23 +8,26 @@ public class GamePanel extends JPanel {
     public final int SCREEN_HEIGHT = 1080;
 
     private Player player;
-    private GameEngine engine;
+    private GameEngine gameEngine;
     private KeyHandler keyHandler;
-
     private BufferedImage background;
     private BufferedImage slashEffect;
 
-    public GamePanel(Player player, KeyHandler keyHandler) {
-        this.player = player;
-        this.keyHandler = keyHandler;
+    private final Color overlayColor = new Color(0, 0, 0, 150);
+    private final Color hitColor = new Color(255, 0, 0, 100);
+    private final Font largeFont = new Font("Arial", Font.BOLD, 120);
+    private final Font mediumFont = new Font("Arial", Font.BOLD, 50);
+    private final Font smallFont = new Font("Arial", Font.BOLD, 36);
+
+    public GamePanel() {
+        keyHandler = new KeyHandler();
+        player = new Player(960, 540, 5, keyHandler);
+        gameEngine = new GameEngine(this, keyHandler, player);
+
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
         loadImages();
-    }
-
-    public void setEngine(GameEngine engine) {
-        this.engine = engine;
     }
 
     private void loadImages() {
@@ -36,6 +39,14 @@ public class GamePanel extends JPanel {
         }
     }
 
+    public GameEngine getGameEngine() {
+        return gameEngine;
+    }
+
+    public KeyHandler getKeyHandler() {
+        return keyHandler;
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -45,61 +56,67 @@ public class GamePanel extends JPanel {
             g2.drawImage(background, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
         }
 
-        if (engine == null) return;
+        if (gameEngine == null) return;
+
+        synchronized (gameEngine.enemies) {
+            for (Enemy enemy : gameEngine.enemies) {
+                enemy.draw(g2);
+            }
+        }
 
         player.draw(g2);
 
-        if (engine.attackActiveTime > 0 && slashEffect != null) {
-            g2.drawImage(slashEffect, engine.attackHitbox.x, engine.attackHitbox.y, engine.attackHitbox.width, engine.attackHitbox.height, null);
+        if (gameEngine.getHitCooldown() > 0 && gameEngine.getHitCooldown() % 10 < 5) {
+            g2.setColor(hitColor);
+            int inset = 50;
+            g2.fillRect(player.x + inset, player.y + inset, player.width - (inset * 2), player.height - (inset * 2));
         }
 
-        for (Enemy enemy : engine.enemies) {
-            enemy.draw(g2);
+        if (gameEngine.attackActiveTime > 0 && slashEffect != null) {
+            g2.drawImage(slashEffect, gameEngine.attackHitbox.x, gameEngine.attackHitbox.y, gameEngine.attackHitbox.width, gameEngine.attackHitbox.height, null);
         }
 
-        for (Particle p : engine.particles) {
-            p.draw(g2);
+        synchronized (gameEngine.particles) {
+            for (Particle p : gameEngine.particles) {
+                p.draw(g2);
+            }
         }
 
         g2.setColor(Color.WHITE);
-        g2.setFont(new Font("Arial", Font.BOLD, 36));
-        g2.drawString("Score: " + engine.score, 30, 50);
+        g2.setFont(smallFont);
+        g2.drawString("Score: " + gameEngine.score, 30, 50);
         g2.setColor(Color.CYAN);
-        g2.drawString("Level: " + engine.level, 30, 100);
+        g2.drawString("Level: " + gameEngine.level, 30, 100);
 
-        if (engine.isGameOver) {
-            g2.setColor(new Color(0, 0, 0, 150));
+        g2.setColor(Color.RED);
+        g2.drawString("HP: ", 1700, 50);
+
+        for (int i = 0; i < player.maxHealth; i++) {
+            g2.drawRect(1780 + (i * 40), 25, 30, 30);
+        }
+
+        for (int i = 0; i < player.currentHealth; i++) {
+            g2.fillRect(1780 + (i * 40), 25, 30, 30);
+        }
+
+        if (gameEngine.isGameOver) {
+            g2.setColor(overlayColor);
             g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
             g2.setColor(Color.RED);
-            g2.setFont(new Font("Arial", Font.BOLD, 120));
-            g2.drawString("GAME OVER", 580, 500);
+            g2.setFont(largeFont);
+            g2.drawString("GAME OVER", 600, 500);
 
             g2.setColor(Color.WHITE);
-            g2.setFont(new Font("Arial", Font.BOLD, 48));
-            g2.drawString("Press R to Restart", 740, 600);
-        }
-        else if (keyHandler.escPressed) {
-            g2.setColor(new Color(0, 0, 0, 150));
+            g2.setFont(mediumFont);
+            g2.drawString("Press 'R' to Restart", 720, 600);
+        } else if (keyHandler.escPressed) {
+            g2.setColor(overlayColor);
             g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-            g2.setFont(new Font("Arial", Font.BOLD, 120));
-            g2.setColor(Color.YELLOW);
-            g2.drawString("PAUSED", 700, 540);
-        }
-        g2.setColor(Color.RED);
-        g2.setFont(new Font("Arial", Font.BOLD, 36));
-        g2.drawString("HP: ", 1600, 50);
-        for (int i = 0; i < player.currentHealth; i++) {
-            g2.fillRect(1680 + (i * 40), 25, 30, 30);
-        }
-
-        if (engine.getHitCooldown() > 0 && engine.getHitCooldown() % 10 < 5) {
-            g2.setColor(new Color(255, 0, 0, 100));
-
-            int inset = 50;
-
-            g2.fillRect(player.x + inset, player.y + inset, player.width - (inset * 2), player.height - (inset * 2));
+            g2.setColor(Color.WHITE);
+            g2.setFont(largeFont);
+            g2.drawString("PAUSED", 700, 500);
         }
 
         g2.dispose();

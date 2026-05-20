@@ -29,7 +29,7 @@ public class MenuPanel extends JPanel {
         instLabel1.setBounds(460, 450, 1000, 50);
         this.add(instLabel1);
 
-        JLabel instLabel2 = new JLabel("Press ESCAPE to pause.", SwingConstants.CENTER);
+        JLabel instLabel2 = new JLabel("Press ESC to pause.", SwingConstants.CENTER);
         instLabel2.setFont(new Font("Arial", Font.BOLD, 36));
         instLabel2.setForeground(Color.WHITE);
         instLabel2.setBounds(460, 520, 1000, 50);
