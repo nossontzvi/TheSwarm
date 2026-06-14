@@ -10,7 +10,7 @@ public class WindowFrame extends JFrame {
     public WindowFrame() {
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
-        gamePanel = new GamePanel();
+        gamePanel = new GamePanel(this);
         menuPanel = new MenuPanel(e -> startGame());
 
         mainPanel.add(menuPanel, "Menu");
@@ -32,5 +32,9 @@ public class WindowFrame extends JFrame {
         cardLayout.show(mainPanel, "Game");
         this.requestFocusInWindow();
         gamePanel.getGameEngine().startGameThread();
+    }
+    public void showMenu(){
+        cardLayout.show(mainPanel, "Menu");
+        this.requestFocusInWindow();
     }
 }

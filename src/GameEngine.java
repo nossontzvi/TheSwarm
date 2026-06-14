@@ -1,7 +1,6 @@
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
 import java.awt.Color;
 
@@ -11,6 +10,7 @@ public class GameEngine {
     private Player player;
     private SoundManager soundManager;
     private int hitCooldown = 0;
+    private boolean isRunning;
     public List<Enemy> enemies = new ArrayList<>();
     public List<Particle> particles = new ArrayList<>();
 
@@ -38,10 +38,10 @@ public class GameEngine {
     }
 
     public void startGameThread() {
-
+        isRunning = true;
         soundManager.loop("bgm");
         new Thread(() -> {
-            while (true) {
+            while (isRunning) {
                 if (!keyHandler.escPressed && !isGameOver) {
                     updateGameLogic();
                 } else if (isGameOver && keyHandler.rPressed) {
@@ -161,6 +161,7 @@ public class GameEngine {
 
                 if (player.currentHealth <= 0) {
                     isGameOver = true;
+                    gamePanel.showReturnToMenuButton();
                 }
                 break;
             }
@@ -176,6 +177,13 @@ public class GameEngine {
         player.y = 540;
         player.currentHealth = player.maxHealth;
         isGameOver = false;
+
+        gamePanel.hideReturnToMenuButton();
+    }
+
+    public void returnToMenu(){
+        isRunning = false;
+
     }
 
     private void spawnParticles(int x, int y) {
@@ -185,4 +193,5 @@ public class GameEngine {
             }
         }
     }
+
 }

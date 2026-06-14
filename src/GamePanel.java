@@ -12,6 +12,9 @@ public class GamePanel extends JPanel {
     private KeyHandler keyHandler;
     private BufferedImage background;
     private BufferedImage slashEffect;
+    private WindowFrame bossFrame;
+
+    private JButton returnToMenuButton = new JButton("Return to Menu");
 
     private final Color overlayColor = new Color(0, 0, 0, 150);
     private final Color hitColor = new Color(255, 0, 0, 100);
@@ -19,10 +22,31 @@ public class GamePanel extends JPanel {
     private final Font mediumFont = new Font("Arial", Font.BOLD, 50);
     private final Font smallFont = new Font("Arial", Font.BOLD, 36);
 
-    public GamePanel() {
+
+
+
+    public GamePanel(WindowFrame windowFrame) {
+        this.bossFrame = windowFrame;
         keyHandler = new KeyHandler();
         player = new Player(960, 540, 5, keyHandler);
         gameEngine = new GameEngine(this, keyHandler, player);
+
+        setLayout(null);
+
+        returnToMenuButton.setFont(new Font("Arial", Font.BOLD, 30));
+        returnToMenuButton.setBackground(new Color(34, 37, 42));
+        returnToMenuButton.setForeground(Color.WHITE);
+        returnToMenuButton.setBounds(810, 650, 300, 70);
+        this.returnToMenuButton.setVisible(false);
+        this.add(returnToMenuButton);
+
+        returnToMenuButton.addActionListener(e -> {
+            gameEngine.returnToMenu();
+            bossFrame.showMenu();
+        });
+
+
+
 
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.BLACK);
@@ -110,6 +134,7 @@ public class GamePanel extends JPanel {
             g2.setColor(Color.WHITE);
             g2.setFont(mediumFont);
             g2.drawString("Press 'R' to Restart", 720, 600);
+
         } else if (keyHandler.escPressed) {
             g2.setColor(overlayColor);
             g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -117,8 +142,16 @@ public class GamePanel extends JPanel {
             g2.setColor(Color.WHITE);
             g2.setFont(largeFont);
             g2.drawString("PAUSED", 700, 500);
+
+
         }
 
-        g2.dispose();
+//        g2.dispose();
+    }
+    public void showReturnToMenuButton(){
+        returnToMenuButton.setVisible(true);
+    }
+    public void hideReturnToMenuButton(){
+        returnToMenuButton.setVisible(false);
     }
 }
