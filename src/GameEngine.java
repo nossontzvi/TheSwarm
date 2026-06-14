@@ -79,7 +79,9 @@ public class GameEngine {
             int enemyType = (int)(Math.random() * 10);
 
             synchronized (enemies) {
-                if (enemyType == 9) {
+                if (level >= 3 && enemyType == 8) {
+                    enemies.add(new EnemyLevel3(randomX, -50, player));
+                } else if (enemyType >= 8) {
                     enemies.add(new FastEnemy(randomX, -50, player));
                 } else {
                     enemies.add(new Enemy(randomX, -50, 2, player));
