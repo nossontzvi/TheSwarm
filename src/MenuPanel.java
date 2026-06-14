@@ -8,7 +8,7 @@ public class MenuPanel extends JPanel {
     private BufferedImage bgImage;
 
     public MenuPanel(ActionListener startAction) {
-        this.setPreferredSize(new Dimension(1920, 1080));
+        this.setPreferredSize(new Dimension(GamePanel.SCREEN_WIDTH, GamePanel.SCREEN_HEIGHT));
         this.setLayout(null);
 
         try {

@@ -4,8 +4,8 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
 public class GamePanel extends JPanel {
-    public final int SCREEN_WIDTH = 1920;
-    public final int SCREEN_HEIGHT = 1080;
+    public static final int SCREEN_HEIGHT = 1080;
+    public static final int SCREEN_WIDTH = 1920;
 
     private Player player;
     private GameEngine gameEngine;

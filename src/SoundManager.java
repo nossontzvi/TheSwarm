@@ -51,4 +51,21 @@ public class SoundManager {
             pool.get(0).loop(Clip.LOOP_CONTINUOUSLY);
         }
     }
+    public void stopLoop(String name) {
+        // 1. Retrieve the specific ArrayList of Clips associated with the string 'name'
+        ArrayList<Clip> pool = clipPools.get(name);
+
+        // 2. Verify the pool exists and contains at least one element to prevent NullPointerExceptions
+        if (pool != null && !pool.isEmpty()) {
+
+            // 3. Target index 0, because loop() started the playback on index 0
+            Clip loopingClip = pool.get(0);
+
+            // 4. If the clip is currently outputting audio, halt it
+            if (loopingClip.isRunning()) {
+                loopingClip.stop(); // Immediately stops the audio thread
+                loopingClip.setFramePosition(0); // Resets the playhead to 0 milliseconds
+            }
+        }
+    }
 }

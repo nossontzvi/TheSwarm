@@ -168,7 +168,7 @@ public class GameEngine {
         }
     }
 
-    private void restartGame() {
+    public void restartGame() {
         synchronized (enemies) { enemies.clear(); }
         synchronized (particles) { particles.clear(); }
         score = 0;
@@ -183,7 +183,7 @@ public class GameEngine {
 
     public void returnToMenu(){
         isRunning = false;
-
+        soundManager.stopLoop("bgm");
     }
 
     private void spawnParticles(int x, int y) {

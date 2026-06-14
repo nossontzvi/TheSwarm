@@ -12,7 +12,6 @@ public class EnemyLevel3 extends Enemy {
     @Override
     protected void getEnemyImage() {
         try {
-
             sprite = ImageIO.read(getClass().getResourceAsStream("/enemy_level_3.png"));
         } catch (IOException e) {
             System.out.println("File not found");
