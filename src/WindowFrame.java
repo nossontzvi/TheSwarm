@@ -2,27 +2,25 @@ import javax.swing.*;
 import java.awt.*;
 
 public class WindowFrame extends JFrame {
-    private CardLayout cardLayout;
-    private JPanel mainPanel;
-    private GamePanel gamePanel;
-    private MenuPanel menuPanel;
+    private final CardLayout cardLayout;
+    private final JPanel mainPanel;
+    private final GamePanel gamePanel;
 
     public WindowFrame() {
-
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
         gamePanel = new GamePanel(this);
-        menuPanel = new MenuPanel(e -> startGame());
+        MenuPanel menuPanel = new MenuPanel(e -> startGame());
 
         mainPanel.add(menuPanel, "Menu");
         mainPanel.add(gamePanel, "Game");
 
+        this.setUndecorated(true);
         this.add(mainPanel);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setResizable(false);
         this.setTitle("The Swarm");
-        this.pack();
-        this.setLocationRelativeTo(null);
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         this.addKeyListener(gamePanel.getKeyHandler());
         this.setFocusable(true);

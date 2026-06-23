@@ -1,7 +1,9 @@
+import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
 public class Enemy extends Entity {
     protected Player player;
+    private static BufferedImage cachedSprite;
 
     public Enemy(int x, int y, int speed, Player player) {
         super(x, y, 120, 120, speed);
@@ -9,12 +11,20 @@ public class Enemy extends Entity {
         getEnemyImage();
     }
 
-    protected void getEnemyImage() {
-        try {
-            sprite = ImageIO.read(getClass().getResourceAsStream("/enemy.png"));
-        } catch (Exception e) {
-            System.out.println("Enemy image not found yet.");
+    public static void preloadImage() {
+        if (cachedSprite == null) {
+            try {
+                java.io.InputStream is = Enemy.class.getResourceAsStream("/enemy.png");
+                if (is != null) cachedSprite = ImageIO.read(is);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+    }
+
+    protected void getEnemyImage() {
+        preloadImage();
+        sprite = cachedSprite;
     }
 
     @Override

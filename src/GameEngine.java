@@ -1,18 +1,17 @@
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.awt.Color;
 
 public class GameEngine {
-    private GamePanel gamePanel;
-    private KeyHandler keyHandler;
-    private Player player;
-    private SoundManager soundManager;
+    private final GamePanel gamePanel;
+    private final KeyHandler keyHandler;
+    private final Player player;
+    private final SoundManager soundManager;
     private int hitCooldown = 0;
     private boolean isRunning;
-    public List<Enemy> enemies = new ArrayList<>();
-    public List<Particle> particles = new ArrayList<>();
+    public List<Enemy> enemies = new CopyOnWriteArrayList<>();
+    public List<Particle> particles = new CopyOnWriteArrayList<>();
 
     public int getHitCooldown() {
         return hitCooldown;
@@ -21,6 +20,7 @@ public class GameEngine {
     public int score = 0;
     public int level = 1;
     public boolean isGameOver = false;
+    private boolean isPaused = false;
 
     private int spawnTimer = 0;
     private int attackCooldown = 0;
@@ -42,17 +42,29 @@ public class GameEngine {
         soundManager.loop("bgm");
         new Thread(() -> {
             while (isRunning) {
-                if (!keyHandler.escPressed && !isGameOver) {
+                if (isGameOver) {
+                    if (keyHandler.rPressed) {
+                        restartGame();
+                    }
+                } else if (keyHandler.escPressed) {
+                    if (!isPaused) {
+                        isPaused = true;
+                        gamePanel.showReturnToMenuButton();
+                    }
+                } else {
+                    if (isPaused) {
+                        isPaused = false;
+                        gamePanel.hideReturnToMenuButton();
+                    }
                     updateGameLogic();
-                } else if (isGameOver && keyHandler.rPressed) {
-                    restartGame();
                 }
 
                 gamePanel.repaint();
+
                 try {
                     Thread.sleep(16);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
                 }
             }
         }).start();
@@ -78,14 +90,12 @@ public class GameEngine {
             int randomX = (int)(Math.random() * 1920);
             int enemyType = (int)(Math.random() * 10);
 
-            synchronized (enemies) {
-                if (level >= 3 && enemyType == 8) {
-                    enemies.add(new EnemyLevel3(randomX, -50, player));
-                } else if (enemyType >= 8) {
-                    enemies.add(new FastEnemy(randomX, -50, player));
-                } else {
-                    enemies.add(new Enemy(randomX, -50, 2, player));
-                }
+            if (level >= 3 && enemyType == 8) {
+                enemies.add(new EnemyLevel3(randomX, -50, player));
+            } else if (enemyType >= 8) {
+                enemies.add(new FastEnemy(randomX, -50, player));
+            } else {
+                enemies.add(new Enemy(randomX, -50, 2, player));
             }
             spawnTimer = 0;
         }
@@ -126,29 +136,20 @@ public class GameEngine {
     }
 
     private void updateLists() {
-        synchronized (enemies) {
-            Iterator<Enemy> enemyIterator = enemies.iterator();
-            while (enemyIterator.hasNext()) {
-                Enemy enemy = enemyIterator.next();
-                enemy.update();
-                if (!enemy.isActive) {
-                    enemyIterator.remove();
-                }
+        for (Enemy enemy : enemies) {
+            enemy.update();
+            if (!enemy.isActive) {
+                enemies.remove(enemy);
             }
         }
 
-        synchronized (particles) {
-            Iterator<Particle> particleIterator = particles.iterator();
-            while (particleIterator.hasNext()) {
-                Particle p = particleIterator.next();
-                p.update();
-                if (p.life <= 0) {
-                    particleIterator.remove();
-                }
+        for (Particle p : particles) {
+            p.update();
+            if (p.life <= 0) {
+                particles.remove(p);
             }
         }
     }
-
 
     private void checkPlayerCollision() {
         if (hitCooldown > 0) return;
@@ -169,15 +170,15 @@ public class GameEngine {
     }
 
     public void restartGame() {
-        synchronized (enemies) { enemies.clear(); }
-        synchronized (particles) { particles.clear(); }
+        enemies.clear();
+        particles.clear();
         score = 0;
         level = 1;
         player.x = 960;
         player.y = 540;
         player.currentHealth = player.maxHealth;
         isGameOver = false;
-
+        isPaused = false;
         gamePanel.hideReturnToMenuButton();
     }
 
@@ -187,11 +188,8 @@ public class GameEngine {
     }
 
     private void spawnParticles(int x, int y) {
-        synchronized (particles) {
-            for (int i = 0; i < 15; i++) {
-                particles.add(new Particle(x, y, Color.GREEN));
-            }
+        for (int i = 0; i < 15; i++) {
+            particles.add(new Particle(x, y, Color.GREEN));
         }
     }
-
 }
